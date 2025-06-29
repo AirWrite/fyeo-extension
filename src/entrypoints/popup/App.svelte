@@ -1,42 +1,56 @@
 <script lang="ts">
-  import svelteLogo from '../../assets/svelte.svg'
-  import Counter from '../../lib/Counter.svelte'
+    import Checkbox from "./Checkbox.svelte";
+
+    class State {
+        private _enabled = $state(true);
+        private _pii = $state(true);
+
+        get enabled() {
+            return this._enabled;
+        }
+
+        set enabled(enabled: boolean) {
+            this._enabled = enabled;
+            this.saveSetting("enabled", enabled);
+        }
+
+        get pii() {
+            return this._pii;
+        }
+
+        set pii(pii: boolean) {
+            this._pii = pii;
+            this.saveSetting("pii", pii);
+        }
+
+        private saveSetting(name: string, value: boolean) {
+            browser.storage.sync.set({
+                [name]: value
+            })
+        }
+
+        constructor() {
+            browser.storage.sync.get(["enabled", "pii"], (result) => {
+                // Set default values if not found
+                this._enabled =
+                    result.enabled !== undefined ? result.enabled : true;
+                this._pii = result.pii !== undefined ? result.pii : true;
+            });
+        }
+    }
+
+    const app_state = new State();
 </script>
 
-<main>
-  <div>
-    <a href="https://wxt.dev" target="_blank" rel="noreferrer">
-      <img src="/wxt.svg" class="logo" alt="WXT Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>WXT + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p class="read-the-docs">
-    Click on the WXT and Svelte logos to learn more
-  </p>
-</main>
-
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #54bc4ae0);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
-</style>
+<div class="w-40">
+    <navbar class="navbar bg-base-100 shadow-sm">
+        <span class="text-xl font-bold">fyeo</span>
+    </navbar>
+    <main>
+        <h2 class="text-lg text-center">settings</h2>
+        <ul>
+            <Checkbox bind:checked={app_state.enabled}>enabled</Checkbox>
+            <Checkbox disabled={!app_state.enabled} bind:checked={app_state.pii}>hide personal info</Checkbox>
+        </ul>
+    </main>
+</div>
